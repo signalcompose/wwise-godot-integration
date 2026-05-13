@@ -22,6 +22,12 @@ addons/Wwise/native/src**/*.o
 addons/Wwise/native/src**/*.os
 addons/Wwise/native/src/gen/
 
+# Gradle Android build intermediates
+addons/Wwise/native/android/.gradle/
+addons/Wwise/native/android/plugin/build/
+addons/Wwise/native/android/plugin/.cxx/
+addons/Wwise/native/android/plugin/src/main/assets/
+
 # GdUnit4 test reports
 tests/GodotProject/reports/
 

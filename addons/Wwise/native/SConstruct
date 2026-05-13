@@ -463,8 +463,9 @@ elif env["platform"] == "macos":
 
     env.Append(CXXFLAGS=["-std=c++20"])
 
-    macos_install_name = "@rpath/libwwise.{}.{}.framework/libwwise.{}.{}.{}".format(
-        env["platform"], env["target"], env["platform"], env["target"], env["wwise_config"]
+    macos_install_name = "@rpath/libwwise.{}.{}.{}.framework/libwwise.{}.{}.{}".format(
+        env["platform"], env["target"], env["wwise_config"],
+        env["platform"], env["target"], env["wwise_config"]
     )
 
     env.Append(
