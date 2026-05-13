@@ -46,6 +46,17 @@ scons platform=macos target=template_debug wwise_sdk=/path/to/WwiseSDK wwise_con
 scons platform=macos target=template_release wwise_sdk=/path/to/WwiseSDK wwise_config=release
 ```
 
+```powershell
+# Windows editor build (PowerShell)
+scons platform=windows target=editor wwise_sdk='C:\Audiokinetic\Wwise_2025.1.3.9039\SDK'
+
+# Windows runtime builds
+scons platform=windows target=template_debug wwise_sdk='...' wwise_config=debug
+scons platform=windows target=template_release wwise_sdk='...' wwise_config=release
+```
+
+Windows での詳細なセットアップ手順と CI と一致する完全なコマンドは [docs/local-build-setup-windows.md](docs/local-build-setup-windows.md) を参照。
+
 **Key SCons options:**
 - `platform`: `windows` | `macos` | `linux` | `ios` | `android`
 - `target`: `editor` | `template_debug` | `template_release`
@@ -110,7 +121,7 @@ WAAPI (authoring API) is gated behind `#if defined(AK_WIN) || defined(AK_MAC_OS_
 - **Naming**: PascalCase classes, snake_case methods/members, `UPPER_SNAKE_CASE` enum constants
 - **Ak prefix**: Godot scene nodes (e.g., `AkEvent3D`, `AkListener2D`); **Wwise prefix**: Wwise SDK type wrappers (e.g., `WwiseEvent`, `WwiseBank`)
 - **Error handling**: `ERR_FAIL_COND(...)` / `ERR_FAIL_COND_V(...)` for precondition checks
-- No auto-formatter is configured; maintain existing style manually
+- **Formatting**: [.clang-format](addons/Wwise/native/src/.clang-format) defines the style (LLVM base, hard tabs, Allman braces, 120-col, C++20). Not enforced by CI/hooks; run `clang-format -i` manually on touched files
 
 ## Adding a New Exposed Class
 
@@ -123,3 +134,7 @@ WAAPI (authoring API) is gated behind `#if defined(AK_WIN) || defined(AK_MAC_OS_
 ## Testing
 
 Tests use GdUnit4. Open `tests/GodotProject/` in the Godot Editor and run `tests/GodotProject/test/test_wwise.gd`. There is no CLI test runner.
+
+## Claude Code MCP (optional)
+
+If your Claude Code setup has the **Context7** and **Serena** MCP plugins available, prefer them: Context7 for fetching current docs of libraries / SDKs / CLI tools (Godot, godot-cpp, Wwise authoring API, etc.), and Serena for semantic symbol navigation and symbol-level edits over reading whole files. Each server provides its own usage instructions when connected, so this is just a pointer — no setup steps live here.
