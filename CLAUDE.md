@@ -35,29 +35,60 @@ cd emsdk
 
 ## Build Commands
 
-All build commands run from `addons/Wwise/native/`. The Wwise SDK path must be provided.
+ローカルビルドは `tools/scripts/` 配下のラッパースクリプト経由が標準です。`env.sh`（POSIX）/ `env.ps1`（Windows）が `WWISE_SDK` / `JAVA_HOME` / `ANDROID_NDK_HOME` / `EMSDK_DIR` などのデフォルトを集中管理し、必要に応じて環境変数で上書きできます。
 
 ```bash
-# macOS editor build
-scons platform=macos target=editor wwise_sdk=/path/to/WwiseSDK
-
-# macOS runtime builds
-scons platform=macos target=template_debug wwise_sdk=/path/to/WwiseSDK wwise_config=debug
-scons platform=macos target=template_release wwise_sdk=/path/to/WwiseSDK wwise_config=release
+# リポジトリルートから (macOS / Linux)
+./tools/scripts/build-macos.sh    # macOS editor + template_debug + template_release
+./tools/scripts/build-ios.sh      # iOS template_debug + template_release (arm64)
+./tools/scripts/build-android.sh  # godot-cpp Android prebuild + Gradle assemble (arm64-v8a + armeabi-v7a, debug + release)
+./tools/scripts/build-web.sh      # Web template_debug (debug + profile) + template_release
+./tools/scripts/build-linux.sh    # Linux editor + template_debug + template_release
+./tools/scripts/build-all.sh      # macOS / iOS / Android / Web を順次（macOS ホスト想定）
 ```
 
-**Key SCons options:**
-- `platform`: `windows` | `macos` | `linux` | `ios` | `android`
+```powershell
+# Windows (PowerShell)
+.\tools\scripts\build-windows.ps1  # Windows editor + template_debug + template_release
+```
+
+```bash
+# パスを上書き
+WWISE_SDK=/other/path ./tools/scripts/build-macos.sh
+```
+
+詳細な環境構築・OS 別手順:
+
+- macOS: [docs/local-build-setup-macos.md](docs/local-build-setup-macos.md)
+- iOS: [docs/local-build-setup-ios.md](docs/local-build-setup-ios.md)
+- Windows: [docs/local-build-setup-windows.md](docs/local-build-setup-windows.md)
+- Linux: [docs/local-build-setup-linux.md](docs/local-build-setup-linux.md)
+- Android: [docs/local-build-setup-android.md](docs/local-build-setup-android.md)
+- Web: [docs/local-build-setup-web.md](docs/local-build-setup-web.md)
+
+ホスト OS 別の基本環境構築（Python / uv / SCons / venv / Wwise SDK）は [docs/host-setup-{macos,windows,linux}.md](docs/local-build-setup.md#ホスト環境セットアップ) を参照。
+
+**Key SCons options** (manual invocation reference):
+- `platform`: `windows` | `macos` | `linux` | `ios` | `android` | `web`
 - `target`: `editor` | `template_debug` | `template_release`
 - `wwise_config`: `debug` | `profile` | `release`
 - `wwise_sdk`: path to Wwise SDK root directory
 - `plugins`: comma-separated list (`reflect`, `motion`, `convolution`, `soundseed_grain`, `soundseed_air`, `impacter`, `mastering_suite`)
 - `dev_build=yes` / `asserts=yes`: enable debug features
+- `use_static_cpp=yes` / `precision=single` / `build_profile=...`: standard flag set used by all native (non-Web) targets in CI
 
-**Android** (from `addons/Wwise/native/android/`):
+**Android (manual)** — Gradle が CMake / NDK を呼ぶため、godot-cpp Android 静的アーカイブの事前ビルドが必要です。`build-android.sh` はこれを自動で行いますが、手動で叩く場合:
+
 ```bash
-./gradlew build
+# 1. godot-cpp prebuild (addons/Wwise/native/godot-cpp/)
+scons platform=android target=template_debug arch={arm32,arm64} dev_build=yes precision=single
+scons platform=android target=template_release arch={arm32,arm64} precision=single
+
+# 2. Gradle assemble (addons/Wwise/native/android/)
+./gradlew assemble -PWWISE_SDK=/path/to/SDK -Pprecision=single --no-daemon
 ```
+
+`./gradlew assembleDebug` 単体では `lib/android/` への成果物コピーが走らないので、必ず `assemble` を使ってください。
 
 ## Architecture
 
@@ -110,7 +141,7 @@ WAAPI (authoring API) is gated behind `#if defined(AK_WIN) || defined(AK_MAC_OS_
 - **Naming**: PascalCase classes, snake_case methods/members, `UPPER_SNAKE_CASE` enum constants
 - **Ak prefix**: Godot scene nodes (e.g., `AkEvent3D`, `AkListener2D`); **Wwise prefix**: Wwise SDK type wrappers (e.g., `WwiseEvent`, `WwiseBank`)
 - **Error handling**: `ERR_FAIL_COND(...)` / `ERR_FAIL_COND_V(...)` for precondition checks
-- No auto-formatter is configured; maintain existing style manually
+- **Formatting**: [.clang-format](addons/Wwise/native/src/.clang-format) defines the style (LLVM base, hard tabs, Allman braces, 120-col, C++20). Not enforced by CI/hooks; run `clang-format -i` manually on touched files
 
 ## Adding a New Exposed Class
 
@@ -123,3 +154,7 @@ WAAPI (authoring API) is gated behind `#if defined(AK_WIN) || defined(AK_MAC_OS_
 ## Testing
 
 Tests use GdUnit4. Open `tests/GodotProject/` in the Godot Editor and run `tests/GodotProject/test/test_wwise.gd`. There is no CLI test runner.
+
+## Claude Code MCP (optional)
+
+If your Claude Code setup has the **Context7** and **Serena** MCP plugins available, prefer them: Context7 for fetching current docs of libraries / SDKs / CLI tools (Godot, godot-cpp, Wwise authoring API, etc.), and Serena for semantic symbol navigation and symbol-level edits over reading whole files. Each server provides its own usage instructions when connected, so this is just a pointer — no setup steps live here.
