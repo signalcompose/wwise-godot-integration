@@ -69,3 +69,14 @@ String AkEditorUtils::get_theme_folder(bool dark_mode)
 {
 	return dark_mode ? "res://addons/Wwise/editor/theme/dark/images/" : "res://addons/Wwise/editor/theme/light/images/";
 }
+
+void AkEditorUtils::clear_icon_cache()
+{
+	for (int mode_index = 0; mode_index < 2; mode_index++)
+	{
+		for (int type_index = 0; type_index < (int)WwiseObjectType::Max; type_index++)
+		{
+			icon_cache[mode_index][type_index] = Ref<Texture2D>();
+		}
+	}
+}

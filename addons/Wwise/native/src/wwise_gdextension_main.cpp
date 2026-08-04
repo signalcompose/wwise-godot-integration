@@ -220,6 +220,11 @@ void unregister_wwise_types(ModuleInitializationLevel p_level)
 			Engine::get_singleton()->unregister_singleton("WwiseProjectDatabase");
 			memdelete(wwise_project_database);
 		}
+
+		// AkEditorUtils::icon_cache holds Ref<Texture2D>. It must be released here, while the engine is
+		// still alive, rather than left to the implicit static destructor at process exit (which can run
+		// after the engine has already shut down and crash on the callback).
+		AkEditorUtils::clear_icon_cache();
 #endif
 #endif
 	}

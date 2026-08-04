@@ -22,4 +22,9 @@ public:
 	static Ref<Texture2D> get_editor_icon(const WwiseObjectType p_type);
 	static String get_icon_name(const WwiseObjectType p_type);
 	static String get_theme_folder(bool dark_mode);
+
+	// Must be called from unregister_wwise_types() while the engine is still alive. icon_cache holds
+	// Ref<Texture2D>, and releasing it via the implicit static destructor at process exit calls back
+	// into an already-shut-down engine, causing a crash.
+	static void clear_icon_cache();
 };
