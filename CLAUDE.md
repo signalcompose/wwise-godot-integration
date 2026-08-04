@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-GDExtension-based integration of Audiokinetic's Wwise audio middleware with Godot Engine 4.3+. The C++ library wraps the Wwise SDK and exposes it as Godot nodes, resources, and singletons via GDScript.
+GDExtension-based integration of Audiokinetic's Wwise audio middleware with Godot Engine 4.5+ (`compatibility_minimum` in `addons/Wwise/native/wwise.gdextension`, gated by the `godot-cpp` submodule's version). The C++ library wraps the Wwise SDK and exposes it as Godot nodes, resources, and singletons via GDScript.
 
 ## Initial Setup
 

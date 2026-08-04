@@ -1,0 +1,7 @@
+[gd_resource type="WwiseBank" format=3]
+
+[resource]
+name = "CrashTestBank"
+id = 1234567890
+guid = "{00000000-0000-0000-0000-000000000001}"
+dummy = true

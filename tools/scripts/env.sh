@@ -48,7 +48,7 @@ fi
 : "${JAVA_HOME:=/Applications/Homebrew/opt/openjdk@17/libexec/openjdk.jdk/Contents/Home}"
 : "${ANDROID_HOME:=/Applications/Homebrew/share/android-commandlinetools}"
 : "${ANDROID_SDK_ROOT:=$ANDROID_HOME}"
-: "${ANDROID_NDK_HOME:=$ANDROID_HOME/ndk/23.2.8568313}"
+: "${ANDROID_NDK_HOME:=$ANDROID_HOME/ndk/28.1.13356709}"
 
 # Web (only required for web builds; sourced lazily by build-web.sh)
 : "${EMSDK_DIR:=$PROJECT_ROOT/emsdk}"

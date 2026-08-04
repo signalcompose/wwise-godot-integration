@@ -16,9 +16,10 @@ else ()
     set(GODOT_CPP_LIB_ABI "arm64")
 endif ()
 
-# Set default Android platform to android-21 if not specified
+# Set default Android platform to android-24 if not specified
+# (godot-cpp 4.5+ enforces a minimum API level of 24; see godot-cpp/tools/android.py)
 if (NOT ANDROID_PLATFORM)
-    set(ANDROID_PLATFORM "android-21")
+    set(ANDROID_PLATFORM "android-24")
 endif ()
 
 # Set default build type to Debug if not specified

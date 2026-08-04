@@ -1,0 +1,10 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="WwiseBank" path="res://Wwise/resources/Bank/crash_test_bank.tres" id="1_bank"]
+
+[node name="BankManagerCrashTest" type="Node"]
+
+[node name="AkBank" type="AkBank" parent="."]
+bank = ExtResource("1_bank")
+load_on = 1
+unload_on = 3

@@ -5,109 +5,113 @@ void AkAuxArrayData::set_values(Node* event_node)
 	Wwise::get_singleton()->set_game_object_aux_send_values(event_node, data, data.size());
 }
 
-void AkEnvironmentData::_bind_methods()
+void AkEnvironmentData::_bind_methods() {}
+
+bool AkEnvironmentData::compare_by_priority(const AkEnvironment* a, const AkEnvironment* b)
 {
-	ClassDB::bind_method(D_METHOD("compare_by_priority", "a", "b"), &AkEnvironmentData::compare_by_priority);
+	return a->get_priority() < b->get_priority();
 }
 
-void AkEnvironmentData::add_environment(const AkEnvironment* env)
+void AkEnvironmentData::purge_freed_environments()
 {
-	if (env)
+	for (int i = active_environment_ids.size() - 1; i >= 0; i--)
 	{
-		int64_t index =
-				active_environments.bsearch_custom(env, callable_mp(this, &AkEnvironmentData::compare_by_priority));
-		active_environments.insert(index, env);
-		have_environments_changed = true;
-	}
-}
-
-void AkEnvironmentData::remove_environment(const AkEnvironment* env)
-{
-	if (env)
-	{
-		int64_t index = active_environments.find(env);
-		if (index != -1)
+		if (!Object::cast_to<AkEnvironment>(ObjectDB::get_instance(active_environment_ids[i])))
 		{
-			active_environments.remove_at(index);
+			active_environment_ids.remove_at(i);
 			have_environments_changed = true;
 		}
 	}
 }
 
-bool AkEnvironmentData::compare_by_priority(const AkEnvironment* a, const AkEnvironment* b)
+void AkEnvironmentData::add_environment(const AkEnvironment* env)
 {
-	if (a->get_priority() < b->get_priority())
+	if (!env)
 	{
-		return true;
+		return;
 	}
-	else if (a->get_priority() == b->get_priority())
+
+	// Freed entries must be purged before searching: the binary search below assumes
+	// every element resolves to a live AkEnvironment*, otherwise the priority ordering
+	// it relies on is no longer monotonic and can insert at the wrong position.
+	purge_freed_environments();
+
+	// Manual lower_bound insert, matching the previous Array::bsearch_custom(value, func)
+	// semantics (func returns true if the existing element belongs before value).
+	int lo = 0;
+	int hi = active_environment_ids.size();
+	while (lo < hi)
 	{
-		return false;
+		int mid = (lo + hi) / 2;
+		const AkEnvironment* mid_env =
+				Object::cast_to<AkEnvironment>(ObjectDB::get_instance(active_environment_ids[mid]));
+
+		if (compare_by_priority(mid_env, env))
+		{
+			lo = mid + 1;
+		}
+		else
+		{
+			hi = mid;
+		}
 	}
-	else
+
+	active_environment_ids.insert(lo, ObjectID(env->get_instance_id()));
+	have_environments_changed = true;
+}
+
+void AkEnvironmentData::remove_environment(const AkEnvironment* env)
+{
+	if (!env)
 	{
-		return false;
+		return;
+	}
+
+	ObjectID id(env->get_instance_id());
+	for (int i = 0; i < active_environment_ids.size(); i++)
+	{
+		if (active_environment_ids[i] == id)
+		{
+			active_environment_ids.remove_at(i);
+			have_environments_changed = true;
+			break;
+		}
 	}
 }
 
 void AkEnvironmentData::add_highest_priority_environments()
 {
-	if (aux_array_data.data.size() < active_environments.size())
+	purge_freed_environments();
+
+	if (aux_array_data.data.size() < active_environment_ids.size())
 	{
-		Vector<int> invalid_indices;
+		const AkEnvironment* env = Object::cast_to<AkEnvironment>(ObjectDB::get_instance(active_environment_ids[0]));
 
-		for (int i = 0; i < active_environments.size(); i++)
+		if (env)
 		{
-			Variant environment = active_environments[i];
-
-			if (!UtilityFunctions::is_instance_valid(environment))
+			Ref<WwiseAuxBus> aux_bus = env->get_aux_bus();
+			if (aux_bus.is_valid())
 			{
-				invalid_indices.push_back(i);
-				continue;
-			}
-
-			const AkEnvironment* env = Object::cast_to<AkEnvironment>(active_environments[i].operator godot::Object*());
-
-			if (env)
-			{
-				if (i == 0)
+				bool exists = false;
+				for (int j = 0; j < aux_array_data.data.size(); j++)
 				{
-					Ref<WwiseAuxBus> aux_bus = env->get_aux_bus();
-					if (aux_bus.is_null())
+					Dictionary current_aux_data = aux_array_data.data[j];
+					if (current_aux_data.has("aux_bus_id") &&
+							(uint32_t)current_aux_data["aux_bus_id"] == aux_bus->get_id())
 					{
-						continue;
-					}
-
-					bool exists = false;
-					for (int j = 0; j < aux_array_data.data.size(); j++)
-					{
-						Dictionary current_aux_data = aux_array_data.data[j];
-						if (current_aux_data.has("aux_bus_id") &&
-								(uint32_t)current_aux_data["aux_bus_id"] == aux_bus->get_id())
-						{
-							exists = true;
-							break;
-						}
-					}
-
-					if (!exists)
-					{
-						Dictionary aux_data;
-						aux_data["control_value"] = 1.0f;
-						aux_data["aux_bus_id"] = aux_bus->get_id();
-						aux_array_data.data.append(aux_data);
+						exists = true;
+						break;
 					}
 				}
-			}
-		}
 
-		if (!invalid_indices.is_empty())
-		{
-			for (int i = invalid_indices.size() - 1; i >= 0; i--)
-			{
-				active_environments.remove_at(invalid_indices[i]);
+				if (!exists)
+				{
+					Dictionary aux_data;
+					aux_data["control_value"] = 1.0f;
+					aux_data["aux_bus_id"] = aux_bus->get_id();
+					aux_array_data.data.append(aux_data);
+				}
 			}
-			have_environments_changed = true;
 		}
 	}
 }
