@@ -17,7 +17,7 @@ run_scons() {
         target="$target" \
         arch="$arch" \
         precision=single \
-        "${extra[@]}" \
+        "${extra[@]+"${extra[@]}"}" \
         -j"$JOBS"
 }
 

@@ -94,7 +94,7 @@ android {
     }
 
     defaultConfig {
-        minSdk = 21
+        minSdk = 24
 
         externalNativeBuild {
             cmake {
@@ -110,7 +110,7 @@ android {
             abiFilters.add("arm64-v8a")
             abiFilters.add("armeabi-v7a")
 
-            ndkVersion = "26.1.10909125"
+            ndkVersion = "28.1.13356709"
         }
 
         manifestPlaceholders["godotPluginName"] = pluginName
@@ -132,7 +132,7 @@ android {
     kotlinOptions {
         jvmTarget = "17"
     }
-    ndkVersion = "23.2.8568313"
+    ndkVersion = "28.1.13356709"
     buildToolsVersion = "33.0.2"
 }
 

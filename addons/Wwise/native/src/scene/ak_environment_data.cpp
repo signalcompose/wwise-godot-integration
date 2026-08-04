@@ -60,7 +60,9 @@ void AkEnvironmentData::add_highest_priority_environments()
 		{
 			Variant environment = active_environments[i];
 
-			if (!UtilityFunctions::is_instance_valid(environment))
+			// TEMP (investigation branch, godot-cpp 4.5): UtilityFunctions::is_instance_valid(Variant)
+			// was removed upstream; inline the equivalent check for this ABI-compat spike only.
+			if (environment.get_type() != Variant::OBJECT || environment.operator godot::Object*() == nullptr)
 			{
 				invalid_indices.push_back(i);
 				continue;
