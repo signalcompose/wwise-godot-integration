@@ -35,7 +35,22 @@ cd emsdk
 
 ## Build Commands
 
-All build commands run from `addons/Wwise/native/`. The Wwise SDK path must be provided.
+**推奨: `tools/scripts/` のラッパースクリプトを使う。** プラットフォームごとに `build-macos.sh` / `build-linux.sh` / `build-ios.sh` / `build-android.sh` / `build-web.sh` / `build-windows.ps1` があり、`env.sh` 経由でSCons引数・SDKパス・並列度を解決する（`build-all.sh` は全対応プラットフォームを順に実行）。
+
+```bash
+# 例: macOS (editor + template_debug + template_release を一括ビルド)
+./tools/scripts/build-macos.sh
+```
+
+`env.sh` は Wwise SDK のデフォルトパスとして macOS では `/Applications/Audiokinetic/Wwise<version>/SDK`（例: `/Applications/Audiokinetic/Wwise2025.1.3.9039/SDK`）を仮定する。異なる場所にインストールしている場合は `WWISE_SDK` を上書きする:
+
+```bash
+WWISE_SDK=/path/to/WwiseSDK ./tools/scripts/build-macos.sh
+```
+
+**注意（zsh環境）:** `env.sh` は `BASH_SOURCE` に依存しているため、zshで直接 `source tools/scripts/env.sh` すると `PROJECT_ROOT` の解決に失敗する。`bash tools/scripts/build-macos.sh` のように bash 経由で実行するか、スクリプトをそのまま `./tools/scripts/build-macos.sh`（shebang `#!/usr/bin/env bash`）で実行すること。
+
+**生のSConsを直接叩く場合**（`addons/Wwise/native/` から実行、Wwise SDKパスを明示指定）:
 
 ```bash
 # macOS editor build
