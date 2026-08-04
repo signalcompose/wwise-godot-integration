@@ -18,7 +18,7 @@ git submodule update --init --recursive
 
 **Web (Emscripten) ビルドの準備:**  
 `emsdk/` はリポジトリルートに配置済み（`.gitignore` 除外、git 管理外）。
-Web ビルド前に以下で環境変数を有効化する:
+`tools/scripts/build-web.sh` を使う場合はスクリプトが自前で `emsdk_env.sh` を source するため以下の手動有効化は不要。生SConsを直接叩く場合のみ、Web ビルド前に以下で環境変数を有効化する:
 
 ```bash
 source emsdk/emsdk_env.sh   # emcc 4.0.23 が PATH に追加される
@@ -35,20 +35,24 @@ cd emsdk
 
 ## Build Commands
 
-**推奨: `tools/scripts/` のラッパースクリプトを使う。** プラットフォームごとに `build-macos.sh` / `build-linux.sh` / `build-ios.sh` / `build-android.sh` / `build-web.sh` / `build-windows.ps1` があり、`env.sh` 経由でSCons引数・SDKパス・並列度を解決する（`build-all.sh` は全対応プラットフォームを順に実行）。
+**推奨: `tools/scripts/` のラッパースクリプトを使う。** プラットフォームごとに `build-macos.sh` / `build-linux.sh` / `build-ios.sh` / `build-android.sh` / `build-web.sh` / `build-windows.ps1` がある。Unix系(`build-macos.sh`等)は `env.sh` を、Windows(`build-windows.ps1`)は `env.ps1` を経由してSConsのパス・SDKパス・並列度・ツールチェイン環境変数を解決する。`build-all.sh` はこのホストでビルド可能な範囲(macOS/iOS/Android/Web)のみを順に実行し、Linux・Windowsは各ホストで個別に実行する。
 
 ```bash
 # 例: macOS (editor + template_debug + template_release を一括ビルド)
 ./tools/scripts/build-macos.sh
 ```
 
-`env.sh` は Wwise SDK のデフォルトパスとして macOS では `/Applications/Audiokinetic/Wwise<version>/SDK`（例: `/Applications/Audiokinetic/Wwise2025.1.3.9039/SDK`）を仮定する。異なる場所にインストールしている場合は `WWISE_SDK` を上書きする:
+`env.sh` は Wwise SDK のデフォルトパスとして macOS では `/Applications/Audiokinetic/Wwise<version>/SDK`（例: `/Applications/Audiokinetic/Wwise2025.1.3.9039/SDK`）を仮定する(ただし `env.sh` 内の実際の記述は `AudioKinetic` と大文字Kになっており、実ディレクトリ名`Audiokinetic`とcase-insensitiveなAPFS上でのみ偶然一致している既知の表記揺れがある)。異なる場所にインストールしている場合は `WWISE_SDK` を上書きする:
 
 ```bash
 WWISE_SDK=/path/to/WwiseSDK ./tools/scripts/build-macos.sh
 ```
 
-**注意（zsh環境）:** `env.sh` は `BASH_SOURCE` に依存しているため、zshで直接 `source tools/scripts/env.sh` すると `PROJECT_ROOT` の解決に失敗する。`bash tools/scripts/build-macos.sh` のように bash 経由で実行するか、スクリプトをそのまま `./tools/scripts/build-macos.sh`（shebang `#!/usr/bin/env bash`）で実行すること。
+Windowsでは `env.ps1` がWwise Launcherの設定する `%WWISESDK%` を優先し、なければ `C:\Audiokinetic\Wwise_<version>\SDK` を既定値とする。上書きは `$env:WWISE_SDK = 'C:\path\to\SDK'; .\tools\scripts\build-windows.ps1` の形式。
+
+`env.sh` のLinux既定値はWSL2上のWindows側Wwise SDK(`/mnt/c/Audiokinetic/...`)を前提としているため、ネイティブLinux環境では `WWISE_SDK` の明示指定が必要。
+
+**注意（zsh環境）:** `env.sh` は `BASH_SOURCE` に依存しているため、zshで直接 `source tools/scripts/env.sh` すると、エラーにはならず `PROJECT_ROOT` がカレントディレクトリ基準の誤ったパスへ静かに解決されてしまう。`bash tools/scripts/build-macos.sh` のように bash 経由で実行するか、スクリプトをそのまま `./tools/scripts/build-macos.sh`（shebang `#!/usr/bin/env bash`）で実行すること。
 
 **生のSConsを直接叩く場合**（`addons/Wwise/native/` から実行、Wwise SDKパスを明示指定）:
 
