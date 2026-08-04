@@ -40,6 +40,14 @@ cd emsdk
 ```bash
 # 例: macOS (editor + template_debug + template_release を一括ビルド)
 ./tools/scripts/build-macos.sh
+
+# 例: Linux（未検証。ネイティブLinuxではWWISE_SDKの明示指定が必要）
+./tools/scripts/build-linux.sh
+```
+
+```powershell
+# 例: Windows（未検証。PowerShell 7+ (pwsh) と Visual Studio 2022(MSVC) がインストール済みのWindowsホストで実行）
+.\tools\scripts\build-windows.ps1
 ```
 
 `env.sh` は Wwise SDK のデフォルトパスとして macOS では `/Applications/Audiokinetic/Wwise<version>/SDK`（例: `/Applications/Audiokinetic/Wwise2025.1.3.9039/SDK`）を仮定する(ただし `env.sh` 内の実際の記述は `AudioKinetic` と大文字Kになっており、実ディレクトリ名`Audiokinetic`とcase-insensitiveなAPFS上でのみ偶然一致している既知の表記揺れがある)。異なる場所にインストールしている場合は `WWISE_SDK` を上書きする:
