@@ -137,7 +137,7 @@ android {
 }
 
 dependencies {
-    implementation("org.godotengine:godot:4.3.0.stable")
+    implementation("org.godotengine:godot:4.5.0.stable")
 }
 
 val cleanAssetsAddons by tasks.registering(Copy::class) {
