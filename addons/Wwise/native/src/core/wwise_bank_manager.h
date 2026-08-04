@@ -92,13 +92,14 @@ public:
 	static void reset()
 	{
 		AkAutoLock<CAkLock> scoped_lock(bank_handles_lock);
+		// banks_to_unload only ever holds pointers that are also values in bank_handles:
+		// dec_ref() pushes a handle onto banks_to_unload without removing it from
+		// bank_handles, and only do_unload_banks() removes a handle from bank_handles
+		// (immediately before deleting it). So bank_handles is always a superset here;
+		// deleting through it once is enough, and banks_to_unload must just be cleared.
 		for (auto& entry : bank_handles)
 		{
 			delete entry.value;
-		}
-		for (auto* bank : banks_to_unload)
-		{
-			delete bank;
 		}
 		bank_handles.clear();
 		banks_to_unload.clear();
