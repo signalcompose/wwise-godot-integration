@@ -137,7 +137,14 @@ android {
 }
 
 dependencies {
-    implementation("org.godotengine:godot:4.5.0.stable")
+    // Compile-time API only: GodotPlugin/Godot classes are provided by the engine at runtime,
+    // and this AAR ships to exports as a bare local .aar (no POM), so nothing resolves this
+    // coordinate downstream. Intentionally NOT matched to wwise.gdextension's
+    // compatibility_minimum (4.5): godot:4.5.0.stable is built with Kotlin 2.1.20 metadata,
+    // which needs Kotlin Gradle Plugin >= 2.1.20, which needs Gradle >= 7.6.3 — this project
+    // is pinned to Gradle 7.5. Bumping this requires a coordinated Gradle/AGP/Kotlin/compileSdk
+    // upgrade first.
+    implementation("org.godotengine:godot:4.3.0.stable")
 }
 
 val cleanAssetsAddons by tasks.registering(Copy::class) {
